@@ -32,6 +32,7 @@ class Product(models.Model):
     def __unicode__(self):
         return self.title
 
+
 class Variation(models.Model):
     product = models.ForeignKey(Product)
     title = models.CharField(max_length=120)
