@@ -1,5 +1,7 @@
 from django.core.urlresolvers import reverse
 from django.db import models
+from django.db.models.signals import post_save
+from django.utils.text import slugify
 
 # Create your models here.
 
@@ -49,3 +51,34 @@ class Variation(models.Model):
 
     def get_absolute_url(self):
         return self.product.get_absolute_url()
+
+def product_post_saved_receiver(sender, instance, created, *args, **kwargs):
+    product = instance
+    variations = product.variation_set.all()
+    # variations = Variation.objects.filter(product=product)
+
+    if variations.count() == 0:
+        new_vari = Variation()
+        new_vari.product = product
+        new_vari.title = 'Default'
+        new_vari.price = product.price
+        new_vari.save()
+
+post_save.connect(product_post_saved_receiver, sender=Product)
+
+
+def image_upload_to(instance, filename):
+    title = instance.product.title
+    slug = slugify(title)
+    basename, file_extension = filename.split('.')
+    new_filename = "%s-%s.%s" % (slug, instance.id, file_extension)
+    return "products/%s/%s" % (slug, new_filename)
+
+class ProductImage(models.Model):
+    product = models.ForeignKey(Product)
+    image = models.ImageField(upload_to=image_upload_to)
+
+    def __unicode__(self):
+        return self.product.title
+
+# Product Category
