@@ -8,11 +8,12 @@ from django.utils import timezone
 
 # Create your views here.
 
+from .mixins import StaffRequiredMixins
 from .forms import VariationInventoryFormSet
 from .models import Product, Variation
 
 
-class VariationListView(ListView):
+class VariationListView(StaffRequiredMixins, ListView):
     model = Variation
     queryset = Variation.objects.all()
 
